@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard</title>
+  <link rel="stylesheet" href="admin.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
+</head>
+<body>
+
+  <!-- Login View -->
+  <div id="loginView" class="login-wrapper">
+    <div class="login-box">
+      <h2>Admin Access</h2>
+      <input type="password" id="adminPassword" placeholder="Enter Password">
+      <button id="loginBtn" class="btn btn-primary">Login</button>
+      <div id="loginError" class="error-msg hidden">Incorrect Password</div>
+    </div>
+  </div>
+
+  <!-- Dashboard View -->
+  <div id="dashboardView" class="dashboard-wrapper hidden">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <h2>Dashboard</h2>
+      <nav>
+        <button class="nav-btn active" data-target="productsSection"><i class="ph ph-package"></i> Products</button>
+        <button class="nav-btn" data-target="brandSection"><i class="ph ph-paint-brush"></i> Brand Settings</button>
+        <a href="/" class="nav-btn store-link"><i class="ph ph-storefront"></i> View Store</a>
+      </nav>
+      <button id="logoutBtn" class="btn btn-outline nav-logout"><i class="ph ph-sign-out"></i> Logout</button>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      
+      <!-- Products Section -->
+      <section id="productsSection" class="admin-section active">
+        <div class="section-header">
+          <h3>Manage Products</h3>
+          <button id="addProductBtn" class="btn btn-primary"><i class="ph ph-plus"></i> Add Product</button>
+        </div>
+        <div class="table-container">
+          <table id="productsTable">
+            <thead>
+              <tr>
+                <th>Image</th>
+                <th>Name</th>
+                <th>Price</th>
+                <th>Discount</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="productsTableBody">
+              <!-- JS Injected -->
+            </tbody>
+          </table>
+          <div id="loadingIndicator" class="loading-state hidden"><i class="ph ph-spinner ph-spin"></i> Syncing with API...</div>
+        </div>
+      </section>
+
+      <!-- Brand Settings Section -->
+      <section id="brandSection" class="admin-section hidden">
+        <div class="section-header">
+          <h3>Brand Identity</h3>
+        </div>
+        <div class="card">
+          <h4>Custom Logo</h4>
+          <p class="desc">Upload a custom logo URL to replace the default text logo across the site. Instantly syncs locally.</p>
+          <div class="logo-preview-box">
+            <img id="logoPreview" src="" alt="No Logo Set" class="hidden">
+            <div id="logoPlaceholder">No Custom Logo</div>
+          </div>
+          <div class="input-group">
+            <label>Logo Source URL (Drive link or image link)</label>
+            <input type="text" id="logoInput" placeholder="https://...">
+          </div>
+          <div class="action-row">
+            <button id="saveLogoBtn" class="btn btn-primary">Save Logo</button>
+            <button id="clearLogoBtn" class="btn btn-danger">Clear</button>
+          </div>
+        </div>
+
+        <div class="card" style="margin-top: 2rem;">
+          <h4>Database Connection</h4>
+          <p class="desc">Paste your Google Apps Script Web App URL here to sync products globally. Required for Edit/Delete functions.</p>
+          <div class="input-group">
+            <label>API Endpoint Web URL</label>
+            <input type="text" id="apiUrlInput" placeholder="https://script.google.com/macros/s/...">
+          </div>
+          <div class="action-row">
+            <button id="saveApiUrlBtn" class="btn btn-primary">Save Connection</button>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- Product Modal -->
+  <div id="productModal" class="modal hidden">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="modalTitle">Add Product</h3>
+        <button id="closeModalBtn" class="close-btn"><i class="ph ph-x"></i></button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="productId">
+        <div class="input-group">
+          <label>Product Name*</label>
+          <input type="text" id="productName" placeholder="E.g. Smart Watch">
+        </div>
+        <div class="input-group">
+          <label>Image URL (Drive Link)* <span style="font-size:0.75rem; color:var(--text-secondary); font-weight:normal;">(Must be set to "Anyone with link can view")</span></label>
+          <input type="text" id="productImage" placeholder="https://drive.google.com/file/d/...">
+          <div class="live-image-preview mt-2 hidden" id="liveImagePreviewBox">
+             <img src="" id="liveImagePreview" alt="Live Preview" style="max-height: 120px; border-radius: 8px; border: 1px solid var(--border);">
+          </div>
+        </div>
+        <div class="input-row">
+          <div class="input-group">
+            <label>Original Price ($)*</label>
+            <input type="number" id="productPrice" placeholder="100.00">
+          </div>
+          <div class="input-group">
+            <label>Discount Price ($)</label>
+            <input type="number" id="productDiscount" placeholder="80.00">
+          </div>
+        </div>
+        <div class="calc-preview hidden" id="discountCalc">0% OFF</div>
+      </div>
+      <div class="modal-footer">
+        <button id="saveProductBtn" class="btn btn-primary">Save Product</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div id="toast" class="toast hidden"></div>
+
+  <script src="admin.js"></script>
+</body>
+</html>

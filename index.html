@@ -1,30 +1,94 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- SEO optimized tags -->
-    <title>Hello Bears</title>
-    <meta name="description" content="A beautiful greeting page for Bears, ready for Vercel deployment.">
-    <link rel="stylesheet" href="index.css">
-    <!-- Modern Typography: Outfit from Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;600;800&display=swap" rel="stylesheet">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Premium Store</title>
+  <meta name="description" content="A premium modern e-commerce experience.">
+  <link rel="stylesheet" href="styles.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+  <!-- Phosphor Icons for modern sleek icons -->
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
 </head>
 <body>
-    <!-- Dynamic background elements -->
-    <div class="background-animation">
-        <div class="blob shape1"></div>
-        <div class="blob shape2"></div>
-        <div class="blob shape3"></div>
+  <!-- Navigation -->
+  <nav class="navbar">
+    <div class="logo" id="logoBtn">
+      <img id="brandLogoImg" src="" alt="Brand Logo" class="hidden" style="max-height:40px; margin-right:10px; vertical-align:middle;">
+      <span id="brandLogoText">Brand<span>.</span></span>
+    </div>
+    <div class="nav-actions">
+      <button id="cartBtn" class="cart-btn">
+        <i class="ph ph-shopping-cart"></i>
+        <span id="cartBadge" class="badge hidden">0</span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- View 1: Landing Page -->
+  <section id="landingView" class="view active-view">
+    <div class="hero-bg">
+      <div class="glow-orb orb-1"></div>
+      <div class="glow-orb orb-2"></div>
+    </div>
+    <div class="hero-content">
+      <div class="offer-banner">🌟 Flat 20% OFF Site-Wide</div>
+      <h1 class="hero-title">Elevate Your<br>Everyday Style</h1>
+      <p class="hero-subtitle">Discover premium, handcrafted products designed for the modern individual.</p>
+      <button id="exploreCta" class="btn-primary">
+        Explore Now <i class="ph ph-arrow-right"></i>
+      </button>
+    </div>
+  </section>
+
+  <!-- View 2: Shop Page -->
+  <section id="shopView" class="view hidden-view">
+    <div class="shop-header">
+      <h2>Featured Products</h2>
+      <div class="search-container">
+        <i class="ph ph-magnifying-glass"></i>
+        <input type="text" id="searchInput" placeholder="Search products...">
+      </div>
     </div>
     
-    <!-- Main Glassmorphism content container -->
-    <main class="glass-container">
-        <h1 class="greeting">hello Bears</h1>
-        <p class="subtitle">Welcome to your vibrant new web app.</p>
-        <button id="exploreBtn" class="action-btn">Explore Now</button>
-    </main>
-    
-    <script src="script.js"></script>
+    <!-- State rendering states -->
+    <div id="loadingState" class="state-msg">
+      <i class="ph ph-spinner ph-spin"></i> Loading premium goods...
+    </div>
+    <div id="errorState" class="state-msg hidden">
+      <i class="ph ph-warning-circle"></i> Failed to connect to Google Sheets. Check permissions.
+    </div>
+    <div id="emptyState" class="state-msg hidden">
+      <i class="ph ph-package"></i> No products found matching your search.
+    </div>
+
+    <!-- Product Grid -->
+    <div id="productGrid" class="product-grid">
+      <!-- Injected via JS -->
+    </div>
+  </section>
+
+  <!-- Cart Sidebar -->
+  <div id="cartOverlay" class="cart-overlay"></div>
+  <aside id="cartSidebar" class="cart-sidebar">
+    <div class="cart-header">
+      <h3>Your Cart</h3>
+      <button id="closeCartBtn" class="close-btn"><i class="ph ph-x"></i></button>
+    </div>
+    <div id="cartItems" class="cart-items">
+      <!-- Injected via JS -->
+    </div>
+    <div class="cart-footer">
+      <div class="cart-total">
+        <span>Total</span>
+        <span id="cartTotalPrice">$0.00</span>
+      </div>
+      <button id="whatsappCheckoutBtn" class="btn-primary whatsapp-btn">
+        <i class="ph ph-whatsapp-logo"></i> Order via WhatsApp
+      </button>
+    </div>
+  </aside>
+
+  <script src="app.js"></script>
 </body>
 </html>
