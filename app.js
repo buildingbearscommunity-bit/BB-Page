@@ -1,5 +1,5 @@
-const SHEET_URL = 'https://docs.google.com/spreadsheets/d/1wJrnJffh-a12_tokRme4oH9Owek4jpIe-SCNvyTdmrM/export?format=csv';
 const WHATSAPP_NUMBER = '9052312057'; // Customize this
+const API_URL_HARDCODED = 'https://script.google.com/macros/s/AKfycbxsblpXfU1HQUY6DqJRxBpR7dAqTRbsDaIKYLZfi4EDw-kTtGPZncUW7bBSncyrqN95/exec';
 
 let productsData = [];
 let cart = JSON.parse(localStorage.getItem('premium_cart')) || [];
@@ -20,91 +20,41 @@ function convertDriveLink(url) {
   return url;
 }
 
-function parseCSV(csvText) {
-  const lines = csvText.split('\n');
-  const result = [];
-  const headers = lines[0].split(',').map(h => h.trim());
-  for(let i=1; i<lines.length; i++){
-    if(!lines[i].trim()) continue;
-    const currentline = lines[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(v => v.replace(/^"|"$/g, '').trim());
-    const obj = {};
-    for(let j=0; j<headers.length; j++){
-      let header = headers[j];
-      if(header.toLowerCase().includes('name')) header = 'name';
-      if(header.toLowerCase().includes('image')) header = 'image';
-      if(header.toLowerCase() === 'price') header = 'price';
-      if(header.toLowerCase().includes('discount')) header = 'discountPrice';
-      obj[header] = currentline[j];
-    }
-    result.push(obj);
-  }
-  return result;
-}
-
-const DUMMY_PRODUCTS = [
-   { id: 1, name: "Premium Wireless Headphones", image: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=800&q=80", price: "299", discountPrice: "249" },
-   { id: 2, name: "Minimalist Smartwatch", image: "https://images.unsplash.com/photo-1546868871-7041f2a55e12?w=800&q=80", price: "199", discountPrice: "149" },
-   { id: 3, name: "Mechanical Keyboard", image: "https://images.unsplash.com/photo-1595225476474-87563907a212?w=800&q=80", price: "149", discountPrice: "129" },
-   { id: 4, name: "Leather Messenger Bag", image: "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=800&q=80", price: "120", discountPrice: "99" }
-];
-
-async function fetchProducts() {
+async function loadProducts() {
   const loadingState = document.getElementById('loadingState');
   const errorState = document.getElementById('errorState');
-  try {
-    // 1. Try Apps Script API first
-    const API_URL = localStorage.getItem('app_api_url');
-    if(API_URL && API_URL.includes('script.google.com')) {
-        try {
-            const res = await fetch(API_URL);
-            const json = await res.json();
-            console.log("Storefront API Response:", json);
-            
-            if (Array.isArray(json)) {
-                productsData = json;
-                productsData.forEach((p, i) => { 
-                    if (p.id === undefined) p.id = i; 
-                    if (p.discountPrice === undefined && p.discount !== undefined) p.discountPrice = p.discount;
-                });
-                console.log("Mapped Storefront Data:", productsData);
-            } else if(json.status === 'success') {
-                productsData = (json.data && json.data.products) ? json.data.products : [];
-            }
-            
-            if (Array.isArray(json) || json.status === 'success') {
-                productsData.forEach(p => p.image = convertDriveLink(p.image));
-                return;
-            }
-        } catch (apiError) {
-            console.error("API Backend execution failed, falling back to sheet...", apiError);
-            const errEl = document.getElementById('errorState');
-            if(errEl) {
-               errEl.classList.remove('hidden');
-               errEl.textContent = 'Backend Error: See Console Log';
-            }
-        }
-    }
+  if (loadingState) loadingState.classList.remove('hidden');
   
-    // 2. Fallback to old CSV hack
-    const response = await fetch(SHEET_URL);
-    if (!response.ok) throw new Error('Network or Permissions issue');
-    const csvData = await response.text();
-    let parsed = parseCSV(csvData);
-    if(parsed.length === 0 || !parsed[0].name) {
-       productsData = DUMMY_PRODUCTS;
+  try {
+    const res = await fetch(API_URL_HARDCODED);
+    if (!res.ok) throw new Error("Network response failed");
+
+    const json = await res.json();
+    console.log("Products from API:", json);
+    
+    // Support pure arrays or wrapped {data: {products: []}}
+    if (Array.isArray(json)) {
+        productsData = json;
+    } else if (json.status === 'success') {
+        productsData = (json.data && json.data.products) ? json.data.products : [];
     } else {
-        productsData = parsed.map((p, index) => ({
-            id: index,
-            name: p.name,
-            image: convertDriveLink(p.image),
-            price: p.price ? p.price.replace(/[^0-9.]/g, '') : '',
-            discountPrice: p.discountPrice ? p.discountPrice.replace(/[^0-9.]/g, '') : ''
-        }));
+        productsData = [];
     }
+
+    productsData.forEach((p, i) => { 
+        if (p.id === undefined) p.id = i; 
+        if (p.discountPrice === undefined && p.discount !== undefined) p.discountPrice = p.discount;
+        p.image = convertDriveLink(p.image);
+    });
+
   } catch (error) {
-    productsData = DUMMY_PRODUCTS;
+    console.error("Error fetching products:", error);
+    const grid = document.getElementById('productGrid');
+    if (grid) grid.innerHTML = "<p style='color:var(--danger); padding:2rem; width:100%; text-align:center;'>Failed to load products.</p>";
+    if (errorState) errorState.classList.remove('hidden');
+    productsData = [];
   } finally {
-    loadingState.classList.add('hidden');
+    if(loadingState) loadingState.classList.add('hidden');
     renderProducts(productsData);
   }
 }
@@ -237,7 +187,6 @@ document.addEventListener('DOMContentLoaded', () => {
         landingView.classList.replace('active-view', 'hidden-view');
         shopView.classList.replace('hidden-view', 'active-view');
         window.scrollTo(0, 0);
-        if(productsData.length === 0) fetchProducts();
     });
 
     document.getElementById('logoBtn').addEventListener('click', () => {
@@ -297,7 +246,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 if(customImg) customImg.classList.add('hidden');
             }
         } else if (e.key === 'app_api_url') {
-            fetchProducts();
+            loadProducts();
         }
     });
+
+    // Auto Load on Page Open
+    loadProducts();
 });
